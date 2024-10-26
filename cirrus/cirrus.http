@@ -1,0 +1,6 @@
+@cirrus_HostAddress = http://localhost:5218
+
+GET {{cirrus_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
