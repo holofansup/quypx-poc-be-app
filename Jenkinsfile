@@ -117,6 +117,8 @@ pipeline {
                 sh """
                   git config user.email "jenkins@holofansup.com"
                   git config user.name "Jenkins"
+                  git fetch origin ${HELM_REPO_BRANCH}
+                  git checkout -B ${HELM_REPO_BRANCH} || git checkout -b ${HELM_REPO_BRANCH}
                   git add ./be-app/values.yaml
                   git commit -m "Update image to ${DOCKER_TAG}" || true
                   git push origin ${HELM_REPO_BRANCH} || true
