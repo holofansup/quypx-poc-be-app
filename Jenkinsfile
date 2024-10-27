@@ -7,7 +7,7 @@ pipeline {
 
     options {
       skipDefaultCheckout()
-      timeout(time: 1, unit: 'HOURS')
+      timeout(time: 2, unit: 'HOURS')
       disableResume()
       disableConcurrentBuilds()
       buildDiscarder(
