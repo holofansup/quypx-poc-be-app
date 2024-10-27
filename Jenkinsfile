@@ -99,7 +99,7 @@ pipeline {
 
           steps {
             script {
-              withCredentials([usernamePassword(credentialsId: 'HELM_REPO_CREDENTIALS_ID', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-access-token-github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
                 checkout([
                   $class: 'GitSCM',
                   branches: [[name: "*/${HELM_REPO_BRANCH}"]],
