@@ -34,20 +34,6 @@ pipeline {
 
 
     stages {
-        stage('Set Environment Variables') {
-          steps {
-            script {
-                env.COMMIT_ID = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-                env.GIT_TAG = sh(returnStdout: true, script: "git describe --exact-match --abbrev=0 || echo NONE").trim()
-                env.DOCKER_TAG = "${GIT_TAG}-${COMMIT_ID}"
-
-                AWS_ACCOUNT_ID = '851725269187'
-                AWS_REGION = 'ap-southeast-1'
-                IMAGE_NAME = 'quypx-poc-uat-be-app'
-                AWS_ECR_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-            }
-          }
-        }
 
         stage('Checkout') {
           environment {
@@ -62,6 +48,21 @@ pipeline {
               branches: [[name: "*/${BRANCH}"]],
               userRemoteConfigs: [[url: REPO_URL, credentialsId: CREDENTIALS_ID]]
             ])
+          }
+        }
+
+        stage('Set Environment Variables') {
+          steps {
+            script {
+                env.COMMIT_ID = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+                env.GIT_TAG = sh(returnStdout: true, script: "git describe --exact-match --abbrev=0 || echo NONE").trim()
+                env.DOCKER_TAG = "${GIT_TAG}-${COMMIT_ID}"
+
+                AWS_ACCOUNT_ID = '851725269187'
+                AWS_REGION = 'ap-southeast-1'
+                IMAGE_NAME = 'quypx-poc-uat-be-app'
+                AWS_ECR_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+            }
           }
         }
 
