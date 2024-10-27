@@ -6,7 +6,6 @@ pipeline {
     }
 
     options {
-      skipDefaultCheckout()
       timeout(time: 2, unit: 'HOURS')
       disableResume()
       disableConcurrentBuilds()
@@ -31,21 +30,21 @@ pipeline {
           }
         }
 
-        stage('Checkout') {
-          environment {
-            REPO_URL = 'https://github.com/quypx/quypx-poc-be-app.git'
-            BRANCH = 'main'
-            CREDENTIALS_ID = 'jenkins-access-token-github'
-          }
+        // stage('Checkout') {
+        //   environment {
+        //     REPO_URL = 'https://github.com/quypx/quypx-poc-be-app.git'
+        //     BRANCH = 'main'
+        //     CREDENTIALS_ID = 'jenkins-access-token-github'
+        //   }
           
-          steps {
-            checkout([
-              $class: 'GitSCM',
-              branches: [[name: "*/${BRANCH}"]],
-              userRemoteConfigs: [[url: REPO_URL, credentialsId: CREDENTIALS_ID]]
-            ])
-          }
-        }
+        //   steps {
+        //     checkout([
+        //       $class: 'GitSCM',
+        //       branches: [[name: "*/${BRANCH}"]],
+        //       userRemoteConfigs: [[url: REPO_URL, credentialsId: CREDENTIALS_ID]]
+        //     ])
+        //   }
+        // }
 
         stage('Build Docker Image') {
           environment {
