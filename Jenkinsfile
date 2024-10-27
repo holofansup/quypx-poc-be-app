@@ -56,7 +56,7 @@ pipeline {
           steps {
             container('kaniko') {
               script {
-                sh """#!/busybox/sh
+                sh """
                   /kaniko/executor \
                   --context=. \
                   --dockerfile=${Dockerfile} \
