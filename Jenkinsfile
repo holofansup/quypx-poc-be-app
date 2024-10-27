@@ -99,27 +99,28 @@ pipeline {
 
           steps {
             script {
-              withCredentials([usernamePassword(credentialsId: '${HELM_REPO_CREDENTIALS_ID}', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+              withCredentials([usernamePassword(credentialsId: 'HELM_REPO_CREDENTIALS_ID', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
                 checkout([
                   $class: 'GitSCM',
                   branches: [[name: "*/${HELM_REPO_BRANCH}"]],
                   userRemoteConfigs: [[url: HELM_REPO_URL, credentialsId: HELM_REPO_CREDENTIALS_ID]]
                 ])
-              sh """
-                  sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
-                  cat ./be-app/values.yaml
+                sh """
+                    sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
+                    cat ./be-app/values.yaml
                 """
 
                 // Commit and push the changes
-              sh """
-                git config user.email "jenkins@holofansup.com"
-                git config user.name "Jenkins"
-                git fetch origin ${HELM_REPO_BRANCH}
-                git checkout -B ${HELM_REPO_BRANCH} || git checkout -b ${HELM_REPO_BRANCH}
-                git add ./be-app/values.yaml
-                git commit -m "Update image to ${DOCKER_TAG}" || true
-                git push origin https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@${HELM_REPO_URL} ${HELM_REPO_BRANCH} || true
-              """
+                sh """
+                    git config user.email "jenkins@holofansup.com"
+                    git config user.name "Jenkins"
+                    git fetch origin ${HELM_REPO_BRANCH}
+                    git checkout -B ${HELM_REPO_BRANCH} || git checkout -b ${HELM_REPO_BRANCH}
+                    git add ./be-app/values.yaml
+                    git commit -m "Update image to ${DOCKER_TAG}" || true
+                    git push https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com/holofansup/quypx-poc-k8s-service.git ${HELM_REPO_BRANCH} || true
+                """
+              } // Closing brace for withCredentials
             }
           }
         }
