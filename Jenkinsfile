@@ -124,12 +124,11 @@ pipeline {
 
               // Add the repository to ArgoCD
               sh """
-                argocd repo add ${ARGOCD_REPO_URL} --username admin --password ${ARGOCD_PASSWORD}
                 argocd login ${ARGOCD_REPO_URL} --username admin --password ${ARGOCD_PASSWORD} --insecure
               """
 
               // Check if the application exists, if not, create it
-              def appExists = sh(script: "argocd app get ${ARGOCD_APP_NAME}", returnStatus: true) == 0
+              appExists = sh(script: "argocd app get ${ARGOCD_APP_NAME}", returnStatus: true) == 0
               if (!appExists) {
                 sh """
                   argocd app create ${ARGOCD_APP_NAME} \
