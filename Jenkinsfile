@@ -14,7 +14,7 @@ pipeline {
                       - /busybox/cat
                     tty: true
                   - name: jnlp
-                    image: jenkins/inbound-agent:alpine
+                    image: 851725269187.dkr.ecr.ap-southeast-1.amazonaws.com/quypx-poc-uat-jenkins-agent:v1
                     imagePullPolicy: Always
                     workingDir: /home/jenkins/agent  
             '''
@@ -110,7 +110,7 @@ pipeline {
               // Update the image tag in the Helm values file
               sh """
                 sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
-                ls -la ./be-app/values.yaml
+                cat ./be-app/values.yaml
               """
 
               // Commit and push the changes
