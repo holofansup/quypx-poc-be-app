@@ -37,9 +37,9 @@ pipeline {
         stage('Set Environment Variables') {
           steps {
             script {
-                COMMIT_ID = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-                GIT_TAG = sh(returnStdout: true, script: "git describe --exact-match --abbrev=0 || echo NONE").trim()
-                DOCKER_TAG = "${GIT_TAG}-${COMMIT_ID}"
+                env.COMMIT_ID = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+                env.GIT_TAG = sh(returnStdout: true, script: "git describe --exact-match --abbrev=0 || echo NONE").trim()
+                env.DOCKER_TAG = "${GIT_TAG}-${COMMIT_ID}"
 
                 AWS_ACCOUNT_ID = '851725269187'
                 AWS_REGION = 'ap-southeast-1'
