@@ -37,8 +37,9 @@ pipeline {
         stage('Set Environment Variables') {
           steps {
             script {
-                
-                DOCKER_TAG = "v1"
+                COMMIT_ID = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+                GIT_TAG = sh(returnStdout: true, script: "git describe --exact-match --abbrev=0 || echo NONE").trim()
+                DOCKER_TAG = "${GIT_TAG}-${COMMIT_ID}"
 
                 AWS_ACCOUNT_ID = '851725269187'
                 AWS_REGION = 'ap-southeast-1'
@@ -99,7 +100,7 @@ pipeline {
 
           steps {
             script {
-              withCredentials([usernamePassword(credentialsId: 'jenkins-access-token-github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+              withCredentials([usernamePassword(credentialsId: 'jenkins-access-token-github', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
                 checkout([
                   $class: 'GitSCM',
                   branches: [[name: "*/${HELM_REPO_BRANCH}"]],
@@ -118,7 +119,7 @@ pipeline {
                     git checkout -B ${HELM_REPO_BRANCH} || git checkout -b ${HELM_REPO_BRANCH}
                     git add ./be-app/values.yaml
                     git commit -m "Update image to ${DOCKER_TAG}" || true
-                    git push https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com/holofansup/quypx-poc-k8s-service.git ${HELM_REPO_BRANCH} || true
+                    git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/holofansup/quypx-poc-k8s-service.git ${HELM_REPO_BRANCH} || true
                 """
               } // Closing brace for withCredentials
             }
