@@ -95,55 +95,56 @@ pipeline {
             ARGOCD_PROJECT = 'application'
             ARGOCD_DEST_SERVER = 'https://kubernetes.default.svc'
             ARGOCD_DEST_NAMESPACE = 'be'
-            ARGOCD_PASSWORD = 'argocd-password'
           }
           
           steps {
             script {
-              // Checkout the Helm manifest repository
-              checkout([
-                $class: 'GitSCM',
-                branches: [[name: "*/${HELM_REPO_BRANCH}"]],
-                userRemoteConfigs: [[url: HELM_REPO_URL, credentialsId: HELM_REPO_CREDENTIALS_ID]]
-              ])
+              withCredentials([string(credentialsId: 'argocd-password', variable: 'ARGOCD_PASSWORD')]) {
+                // Checkout the Helm manifest repository
+                checkout([
+                  $class: 'GitSCM',
+                  branches: [[name: "*/${HELM_REPO_BRANCH}"]],
+                  userRemoteConfigs: [[url: HELM_REPO_URL, credentialsId: HELM_REPO_CREDENTIALS_ID]]
+                ])
 
               // Update the image tag in the Helm values file
-              sh """
-                sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
-                cat ./be-app/values.yaml
-              """
-
-              // Commit and push the changes
-              sh """
-                git config user.email "jenkins@holofansup.com"
-                git config user.name "Jenkins"
-                git add ./be-app/values.yaml
-                git commit -m "Update image to ${DOCKER_TAG}" || true
-                git push origin ${HELM_REPO_BRANCH} || true
-              """
-
-              // Add the repository to ArgoCD
-              sh """
-                argocd login ${ARGOCD_REPO_URL} --username admin --password ${ARGOCD_PASSWORD} --insecure
-              """
-
-              // Check if the application exists, if not, create it
-              appExists = sh(script: "argocd app get ${ARGOCD_APP_NAME}", returnStatus: true) == 0
-              if (!appExists) {
                 sh """
-                  argocd app create ${ARGOCD_APP_NAME} \
-                    --repo ${ARGOCD_REPO_URL} \
-                    --path ${ARGOCD_REPO_PATH} \
-                    --dest-server ${ARGOCD_DEST_SERVER} \
-                    --dest-namespace ${ARGOCD_DEST_NAMESPACE} \
-                    --project ${ARGOCD_PROJECT}
+                  sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
+                  cat ./be-app/values.yaml
                 """
-              }
 
-              // Sync the application with ArgoCD
-              sh """
-                argocd app sync ${ARGOCD_APP_NAME}
-              """
+                // Commit and push the changes
+                sh """
+                  git config user.email "jenkins@holofansup.com"
+                  git config user.name "Jenkins"
+                  git add ./be-app/values.yaml
+                  git commit -m "Update image to ${DOCKER_TAG}" || true
+                  git push origin ${HELM_REPO_BRANCH} || true
+                """
+
+                // Add the repository to ArgoCD
+                sh """
+                  argocd login ${ARGOCD_REPO_URL} --username admin --password ${ARGOCD_PASSWORD} --insecure
+                """
+
+                // Check if the application exists, if not, create it
+                appExists = sh(script: "argocd app get ${ARGOCD_APP_NAME}", returnStatus: true) == 0
+                if (!appExists) {
+                  sh """
+                    argocd app create ${ARGOCD_APP_NAME} \
+                      --repo ${ARGOCD_REPO_URL} \
+                      --path ${ARGOCD_REPO_PATH} \
+                      --dest-server ${ARGOCD_DEST_SERVER} \
+                      --dest-namespace ${ARGOCD_DEST_NAMESPACE} \
+                      --project ${ARGOCD_PROJECT}
+                    """
+                  }
+
+                // Sync the application with ArgoCD
+                sh """
+                    argocd app sync ${ARGOCD_APP_NAME}
+                  """
+              }
             }
           }
         }
