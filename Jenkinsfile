@@ -1,24 +1,24 @@
 pipeline {
     agent {
-        kubernetes {
-          yaml '''
-            apiVersion: v1
-            kind: Pod
-            spec:
-              containers:
-                - name: kaniko
-                  image: gcr.io/kaniko-project/executor:debug
-                  workingDir: /home/jenkins/agent
-                  imagePullPolicy: Always
-                  command:
-                    - /busybox/cat
-                  tty: true
-                - name: jnlp
-                  image: jenkins/inbound-agent:alpine
-                  imagePullPolicy: Always
-                  workingDir: /home/jenkins/agent  
-          '''
-          defaultContainer: 'jnlp'
+      kubernetes {
+        yaml '''
+          apiVersion: v1
+          kind: Pod
+          spec:
+            containers:
+              - name: kaniko
+                image: gcr.io/kaniko-project/executor:debug
+                workingDir: /home/jenkins/agent
+                imagePullPolicy: Always
+                command:
+                  - /busybox/cat
+                tty: true
+              - name: jnlp
+                image: jenkins/inbound-agent:alpine
+                imagePullPolicy: Always
+                workingDir: /home/jenkins/agent  
+        '''
+        defaultContainer: 'jnlp'
         }
     }
 
