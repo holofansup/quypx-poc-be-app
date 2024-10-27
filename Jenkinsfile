@@ -110,6 +110,7 @@ pipeline {
               // Update the image tag in the Helm values file
               sh """
                 sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
+                ls -la ./be-app/values.yaml
               """
 
               // Commit and push the changes
@@ -117,8 +118,8 @@ pipeline {
                 git config user.email "jenkins@holofansup.com"
                 git config user.name "Jenkins"
                 git add ./be-app/values.yaml
-                git commit -m "Update image to ${DOCKER_TAG}"
-                git push origin ${HELM_REPO_BRANCH}
+                git commit -m "Update image to ${DOCKER_TAG}" || true
+                git push origin ${HELM_REPO_BRANCH} || true
               """
 
               // Add the repository to ArgoCD
