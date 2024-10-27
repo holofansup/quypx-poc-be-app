@@ -99,7 +99,7 @@ pipeline {
           
           steps {
             script {
-              withCredentials([string(credentialsId: 'argocd-password', variable: 'ARGOCD_PASSWORD')]) {
+              withCredentials([usernamePassword(credentialsId: 'argocd-password', usernameVariable: 'ARGOCD_USERNAME', passwordVariable: 'ARGOCD_PASSWORD')]) {
                 // Checkout the Helm manifest repository
                 checkout([
                   $class: 'GitSCM',
@@ -124,7 +124,7 @@ pipeline {
 
                 // Add the repository to ArgoCD
                 sh """
-                  argocd login ${ARGOCD_REPO_URL} --username admin --password ${ARGOCD_PASSWORD} --insecure
+                  argocd login ${ARGOCD_REPO_URL} --username ${ARGOCD_USERNAME} --password ${ARGOCD_PASSWORD} --insecure
                 """
 
                 // Check if the application exists, if not, create it
