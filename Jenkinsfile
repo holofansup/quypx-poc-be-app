@@ -13,7 +13,6 @@ pipeline {
       buildDiscarder(
         logRotator(numToKeepStr: '15')
       )
-      timestamps()
     }
 
 
@@ -32,15 +31,17 @@ pipeline {
         }
 
         stage('Checkout') {
+          environment {
+            REPO_URL = 'https://github.com/quypx/quypx-poc-be-app.git'
+            BRANCH = 'main'
+            CREDENTIALS_ID = 'jenkins-access-token-github'
+          }
+          
           steps {
-            def repo_url = 'https://github.com/quypx/quypx-poc-be-app.git'
-            def branch = 'main'
-            def credentials_id = 'jenkins-access-token-github'
-            
             checkout([
               $class: 'GitSCM',
-              branches: [[name: "*/${branch}"]],
-              userRemoteConfigs: [[url: repo_url, credentialsId: credentials_id]]
+              branches: [[name: "*/${BRANCH}"]],
+              userRemoteConfigs: [[url: REPO_URL, credentialsId: CREDENTIALS_ID]]
             ])
           }
         }
