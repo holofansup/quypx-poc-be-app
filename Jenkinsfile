@@ -58,7 +58,7 @@ pipeline {
               script {
                 sh """
                   /kaniko/executor \
-                  --context=`pwd`/cirrus \
+                  --context=`pwd` \
                   --dockerfile=${Dockerfile} \
                   --destination ${DESTINATION}
                 """
