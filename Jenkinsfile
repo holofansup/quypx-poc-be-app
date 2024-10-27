@@ -84,7 +84,47 @@ pipeline {
           }
         }
 
-        stage('Update Helm Manifest and Sync with ArgoCD') {
+        stage('Update Helm Manifest') {
+          environment {
+            HELM_REPO_URL = 'https://github.com/holofansup/quypx-poc-k8s-service.git'
+            HELM_REPO_BRANCH = 'main'
+            HELM_REPO_CREDENTIALS_ID = 'jenkins-access-token-github'
+            ARGOCD_APP_NAME = 'be-app'
+            ARGOCD_REPO_URL = 'quypx-argocd.poc-h2hubgenai.com'
+            ARGOCD_REPO_PATH = 'be-app'
+            ARGOCD_PROJECT = 'application'
+            ARGOCD_DEST_SERVER = 'https://kubernetes.default.svc'
+            ARGOCD_DEST_NAMESPACE = 'be'
+          }
+
+          steps {
+            script {
+              withCredentials([usernamePassword(credentialsId: '${HELM_REPO_CREDENTIALS_ID}', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_PASSWORD')]) {
+                checkout([
+                  $class: 'GitSCM',
+                  branches: [[name: "*/${HELM_REPO_BRANCH}"]],
+                  userRemoteConfigs: [[url: HELM_REPO_URL, credentialsId: HELM_REPO_CREDENTIALS_ID]]
+                ])
+              sh """
+                  sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
+                  cat ./be-app/values.yaml
+                """
+
+                // Commit and push the changes
+              sh """
+                git config user.email "jenkins@holofansup.com"
+                git config user.name "Jenkins"
+                git fetch origin ${HELM_REPO_BRANCH}
+                git checkout -B ${HELM_REPO_BRANCH} || git checkout -b ${HELM_REPO_BRANCH}
+                git add ./be-app/values.yaml
+                git commit -m "Update image to ${DOCKER_TAG}" || true
+                git push origin https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@${HELM_REPO_URL} ${HELM_REPO_BRANCH} || true
+              """
+            }
+          }
+        }
+          
+        stage('Sync with ArgoCD') {
           environment {
             HELM_REPO_URL = 'https://github.com/holofansup/quypx-poc-k8s-service.git'
             HELM_REPO_BRANCH = 'main'
@@ -100,30 +140,6 @@ pipeline {
           steps {
             script {
               withCredentials([usernamePassword(credentialsId: 'argocd-password', usernameVariable: 'ARGOCD_USERNAME', passwordVariable: 'ARGOCD_PASSWORD')]) {
-                // Checkout the Helm manifest repository
-                checkout([
-                  $class: 'GitSCM',
-                  branches: [[name: "*/${HELM_REPO_BRANCH}"]],
-                  userRemoteConfigs: [[url: HELM_REPO_URL, credentialsId: HELM_REPO_CREDENTIALS_ID]]
-                ])
-
-              // Update the image tag in the Helm values file
-                sh """
-                  sed -i 's|tag:.*|tag: \"${DOCKER_TAG}\"|' ./be-app/values.yaml
-                  cat ./be-app/values.yaml
-                """
-
-                // Commit and push the changes
-                sh """
-                  git config user.email "jenkins@holofansup.com"
-                  git config user.name "Jenkins"
-                  git fetch origin ${HELM_REPO_BRANCH}
-                  git checkout -B ${HELM_REPO_BRANCH} || git checkout -b ${HELM_REPO_BRANCH}
-                  git add ./be-app/values.yaml
-                  git commit -m "Update image to ${DOCKER_TAG}" || true
-                  git push origin ${HELM_REPO_BRANCH} || true
-                """
-
                 // Add the repository to ArgoCD
                 sh """
                   argocd login ${ARGOCD_REPO_URL} --username ${ARGOCD_USERNAME} --password ${ARGOCD_PASSWORD} --insecure
