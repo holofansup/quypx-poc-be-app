@@ -49,7 +49,7 @@ pipeline {
 
         stage('Build Docker Image') {
           environment {
-            Dockerfile = '`pwd`/cirrus/Dockerfiletest'
+            Dockerfile = '`pwd`/cirrus/Dockerfile'
             DESTINATION = "${AWS_ECR_URI}/${IMAGE_NAME}:${DOCKER_TAG}"
           }
           
