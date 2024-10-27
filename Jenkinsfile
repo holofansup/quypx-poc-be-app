@@ -49,7 +49,7 @@ pipeline {
 
         stage('Build Docker Image') {
           environment {
-            Dockerfile = './cirrus/Dockerfile'
+            Dockerfile = '`pwd`/cirrus/Dockerfile'
             DESTINATION = "${AWS_ECR_URI}/${IMAGE_NAME}:${DOCKER_TAG}"
           }
           
@@ -58,7 +58,7 @@ pipeline {
               script {
                 sh """
                   /kaniko/executor \
-                  --context=. \
+                  --context=`pwd`/cirrus \
                   --dockerfile=${Dockerfile} \
                   --destination ${DESTINATION}
                 """
