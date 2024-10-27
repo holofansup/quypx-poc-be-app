@@ -90,7 +90,7 @@ pipeline {
             HELM_REPO_BRANCH = 'main'
             HELM_REPO_CREDENTIALS_ID = 'jenkins-access-token-github'
             ARGOCD_APP_NAME = 'be-app'
-            ARGOCD_REPO_URL = 'https://quypx-argocd.poc-h2hubgenai.com/'
+            ARGOCD_REPO_URL = 'quypx-argocd.poc-h2hubgenai.com'
             ARGOCD_REPO_PATH = 'be-app'
             ARGOCD_PROJECT = 'application'
             ARGOCD_DEST_SERVER = 'https://kubernetes.default.svc'
