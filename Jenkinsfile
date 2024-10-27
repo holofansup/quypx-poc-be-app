@@ -1,13 +1,26 @@
 pipeline {
     agent {
         kubernetes {
-          label 'jenkins-agent'
+          yaml '''
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+                - name: kaniko
+                  image: gcr.io/kaniko-project/executor:debug
+                  workingDir: /home/jenkins/agent
+                  command:
+                    - /busybox/cat
+                - name: jnlp
+                  image: jenkins/inbound-agent:alpine
+                  workingDir: /home/jenkins/agent
+          '''
         }
     }
 
     options {
       skipDefaultCheckout()
-      timeout(time: 2, unit: 'HOURS')
+      timeout(time: 1, unit: 'HOURS')
       disableResume()
       disableConcurrentBuilds()
       buildDiscarder(
